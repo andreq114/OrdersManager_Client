@@ -21,6 +21,18 @@ void TcpCommunication::disconnectFromServer(){
     }
 }
 
+
+void TcpCommunication::addNewOrder(){
+    qDebug()<<"Dodaje nowe zamówienie";
+    QString tekst = "ADD";
+    QByteArray block;
+    block.append(tekst);
+    waitForBytesWritten(3000);
+    this->write(block);
+    qDebug()<<tekst;
+    qDebug()<<"Wyslalem do serwera";
+}
+
 void TcpCommunication::changeOrderState(int order,int state)//Zmiana stanu danego zamówienia
 {
     qDebug()<<"Socket dostał";
@@ -35,6 +47,31 @@ void TcpCommunication::changeOrderState(int order,int state)//Zmiana stanu daneg
 
 }
 
+void TcpCommunication::useSoundSignal(){
+    qDebug()<<"Wysylam komende do uzycia sygnalu dzwiekowego";
+    QString tekst = "SOUND";
+    QByteArray block;
+    block.append(tekst);
+    waitForBytesWritten(3000);
+    this->write(block);
+    qDebug()<<tekst;
+    qDebug()<<"Wyslalem do serwera";
+}
+
+void TcpCommunication::recoverLastOrder(){
+    qDebug()<<"Wysylam komende o odzyskanie ostatnio usunietego zamowienia";
+    QString tekst = "RECOVER";
+    QByteArray block;
+    block.append(tekst);
+    waitForBytesWritten(3000);
+    this->write(block);
+    qDebug()<<tekst;
+    qDebug()<<"Wyslalem do serwera";
+}
+
+
+
+
 void TcpCommunication::setIpAdress(QString ip){
     ipAdr = ip;
 }
@@ -48,20 +85,3 @@ int TcpCommunication::getPortNumber(){
     return this->port;
 }
 
-void TcpCommunication::connectSignals(){
-
-
-}
-
-void TcpCommunication::readDataFromServer(){
-//    QByteArray sock = this->readAll();
-//    qDebug()<<"Odebralem cos";
-//    QString data = sock;
-//    qDebug()<<sock;
-//    if(data.at(0) == "$"){
-//        emit connectOk();
-//    }
-//    emit refOrders(data);
-//    //ui->statusLabel->setText(nextFortune);
-//   // ui->connectButton->setEnabled(true);
-}

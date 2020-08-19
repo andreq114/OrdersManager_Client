@@ -6,16 +6,11 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    //tcpSocket = new QTcpSocket(this);
     socket = new TcpCommunication(this);
     connectSignals();
-
-
+    addOrdButtons();
+    connectButtonsWithSlots();
 }
-
-
-
-
 
 MainWindow::~MainWindow()
 {
@@ -27,7 +22,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::readData()             //Odczytywanie danych z serwera, domyslnie odczyt listy zamowien i stanów
 {
-
     QByteArray sock = socket->readAll();
     qDebug()<<"Odebralem cos";
     QString data = sock;
@@ -40,14 +34,10 @@ void MainWindow::readData()             //Odczytywanie danych z serwera, domysln
     getOrdersListFromString(data);
 }
 
-
-
 void MainWindow::connectSignals(){
     connect(socket, &QIODevice::readyRead, this, &MainWindow::readData);
     connect(socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(displayError(QAbstractSocket::SocketError)));
     connect(socket,SIGNAL(disconnect()),this,SLOT(disconnectApprove()));
-
-
 }
 
 void MainWindow::connectApprove(){
@@ -81,12 +71,6 @@ void MainWindow::getOrdersListFromString(QString data){
 
 }
 
-void MainWindow::on_ord1_clicked()
-{
-    qDebug()<<"ord1 klik";
-    changeOrderState(ui->ord1->text().toInt(),2);
-}
-
 void MainWindow::changeOrderState(int order,int state){
     qDebug()<<"Wysylam do socketa";
     socket->changeOrderState(order,state);
@@ -96,10 +80,55 @@ void MainWindow::refreshOrdersList(){
 
 }
 
+void MainWindow::addOrdButtons(){
+    QPushButton *button;
+    QLabel *time;
+    QVBoxLayout *vlay;
+    for(int i=0;i<50;i++){
+        button = new QPushButton(this);
+        button->setStyleSheet("background-color:rgb(0,255,0);border:none;");
+        button->setMinimumSize(120,80);
+        button->setMaximumWidth(250);
+        button->setText("ORDER");
+
+
+        time = new QLabel("empty");
+        time->setStyleSheet("background-color:rgb(0,255,0);");
+        time->setMinimumSize(100,20);
+        time->setMaximumHeight(20);
+        time->setAlignment(Qt::AlignCenter);
+
+        vlay = new QVBoxLayout;
+        vlay->setSpacing(0);
+
+        timeLabels.append(time);
+        orderButtons.append(button);
+        layouts.append(vlay);
+        vlay->addWidget(time);
+        vlay->addWidget(button);
+
+
+    }
+
+    QGridLayout *lay = new QGridLayout;
+    int row = 0;
+    int col = 0;
+
+    for(int i=1;i<=layouts.length();i++){
+
+        row = static_cast<int>(ceil((static_cast<double>(i)/5)))-1;
+        qDebug()<<row;
+        col = (i-1)%5;
+        qDebug()<<col;
+
+        lay->addLayout(layouts.at(i-1),row,col);
+        ui->ordersArea->setLayout(lay);
 
 
 
+    }
 
+ }
 
 
 
@@ -185,12 +214,6 @@ void MainWindow::on_actionInformacje_triggered()
     dialog.exec();
 }
 
-void MainWindow::on_ord2_clicked()
-{
-    qDebug()<<"ord2 klik";
-    changeOrderState(ui->ord2->text().toInt(),2);
-}
-
 void MainWindow::on_actionConnect_triggered()
 {
     if(socket->state() == QAbstractSocket::ConnectedState)
@@ -210,4 +233,34 @@ void MainWindow::on_actionDisconnect_triggered()
 
 void MainWindow::disconnectApprove(){
     QMessageBox::information(this,"Disconnected","Rozłączono");
+}
+
+void MainWindow::on_recoverBUtton_clicked()
+{
+    socket->recoverLastOrder();
+}
+
+void MainWindow::on_soundButton_clicked()
+{
+    socket->useSoundSignal();
+}
+
+void MainWindow::on_addNewOrderButton_clicked()
+{
+    socket->addNewOrder();
+}
+
+
+
+void MainWindow::connectButtonsWithSlots(){
+    connect(orderButtons.at(0),SIGNAL(clicked()),this,SLOT(ord1_clicked()));
+    connect(orderButtons.at(1),SIGNAL(clicked()),this,SLOT(ord2_clicked()));
+}
+
+void MainWindow::ord1_clicked(){
+    qDebug()<<"Button pierwszy";
+}
+
+void MainWindow::ord2_clicked(){
+    qDebug()<<"Button drugi";
 }

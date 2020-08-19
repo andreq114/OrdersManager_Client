@@ -12,24 +12,24 @@ public:
     ~TcpCommunication();
     void connectToServer();
     void disconnectFromServer();
-    void changeOrderState(int order,int state);
     void setIpAdress(QString ip);
     void setPortNumber(int port);
+
+    void addNewOrder();
+    void changeOrderState(int order,int state);
+    void useSoundSignal();
+    void recoverLastOrder();
+
     QString getIpAdress();
     int getPortNumber();
 
 signals:
-    void connectOk();
-    void refOrders(QString data);
     void disconnect();
 
 
 private slots:
-    void readDataFromServer();
+
 private:
-    void connectSignals();
-
-
     QString ipAdr = "172.16.108.177";
     unsigned short port = 51268;
 
