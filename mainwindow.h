@@ -29,7 +29,7 @@ private slots:
     void displayError(QAbstractSocket::SocketError socketError);
 
 
-    void on_connectButton_clicked();
+
 
 
     void on_ord1_clicked();
@@ -42,8 +42,20 @@ private:
     Ui::MainWindow *ui;
 
     TcpCommunication *socket;
+    QVector<int> orders;
+    QVector<int> ordersStates;
 
     void connectSignals();
     void changeOrderState(int order,int state);
+    void refreshOrdersList();
+
+
+private slots:
+    void connectApprove();
+    void getOrdersListFromString(QString data);
+    void on_ord2_clicked();
+    void on_actionConnect_triggered();
+    void on_actionDisconnect_triggered();
+    void disconnectApprove();
 };
 #endif // MAINWINDOW_H

@@ -16,15 +16,13 @@ MainWindow::MainWindow(QWidget *parent)
 
 
 
-void MainWindow::on_connectButton_clicked()
-{
-    ui->connectButton->setEnabled(false);
-    socket->connectToServer();
-}
 
 MainWindow::~MainWindow()
 {
     delete ui;
+
+    socket->abort();
+    delete socket;
 }
 
 void MainWindow::readData()             //Odczytywanie danych z serwera, domyslnie odczyt listy zamowien i stanów
@@ -32,15 +30,14 @@ void MainWindow::readData()             //Odczytywanie danych z serwera, domysln
 
     QByteArray sock = socket->readAll();
     qDebug()<<"Odebralem cos";
-    QString nextFortune = sock;
+    QString data = sock;
     qDebug()<<sock;
-    if(sock == "ACCEPT"){
-        QMessageBox::information(this,"Akceptacja","Połączono");
-    }else{
-        QMessageBox::information(this,"Ramka",nextFortune);
+    if(data.at(0) == "$"){
+        data.remove(0,1);
+        connectApprove();
     }
-    //ui->statusLabel->setText(nextFortune);
-    ui->connectButton->setEnabled(true);
+    qDebug()<<data;
+    getOrdersListFromString(data);
 }
 
 
@@ -48,6 +45,40 @@ void MainWindow::readData()             //Odczytywanie danych z serwera, domysln
 void MainWindow::connectSignals(){
     connect(socket, &QIODevice::readyRead, this, &MainWindow::readData);
     connect(socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(displayError(QAbstractSocket::SocketError)));
+    connect(socket,SIGNAL(disconnect()),this,SLOT(disconnectApprove()));
+
+
+}
+
+void MainWindow::connectApprove(){
+    QMessageBox::information(this,"Akceptacja","Połączono");
+}
+
+void MainWindow::getOrdersListFromString(QString data){
+    QVector<int> ordIndTemp;
+    QVector<int> stateIndTemp;
+    orders.clear();
+    ordersStates.clear();
+
+    qDebug()<<"Przetwarzam stringa";
+    for(int i=0;i<data.length();i++){
+        if(data.at(i) == "*")
+            ordIndTemp.append(i);
+        if(data.at(i) == "^")
+            stateIndTemp.append(i);
+    }
+    for(int i=0;i<ordIndTemp.length()-1;i++){
+        QString ord = data.mid((ordIndTemp.at(i)+1),ordIndTemp.at(i+1)-ordIndTemp.at(i)-1);
+        orders.append(ord.toInt());
+    }
+
+    for(int i=0;i<stateIndTemp.length()-1;i++){
+        QString ord = data.mid((stateIndTemp.at(i)+1),stateIndTemp.at(i+1)-stateIndTemp.at(i)-1);
+        orders.append(ord.toInt());
+    }
+    refreshOrdersList();
+
+
 }
 
 void MainWindow::on_ord1_clicked()
@@ -61,7 +92,9 @@ void MainWindow::changeOrderState(int order,int state){
     socket->changeOrderState(order,state);
 }
 
+void MainWindow::refreshOrdersList(){
 
+}
 
 
 
@@ -94,40 +127,44 @@ void MainWindow::displayError(QAbstractSocket::SocketError socketError){
                                     .arg(socket->errorString()));
        }
 
-       ui->connectButton->setEnabled(true);
+
 }
 
 void MainWindow::on_actionKonfiguracja_triggered()
 {
-    QDialog dialog(this);
-    QFormLayout lay(&dialog);
+    qDebug()<<socket->state();
+    if(socket->state() == QAbstractSocket::ConnectedState){
+        QMessageBox::information(this,"Błąd","Przerwij najpierw aktualne połączenie");
+    }else{
+        QDialog dialog(this);
+        QFormLayout lay(&dialog);
 
-    lay.addRow(new QLabel("Adres IP serwera:"));
-    QLineEdit *ipAdress = new QLineEdit (&dialog);
-    ipAdress->setInputMask("000.000.000.000;_");
-    lay.addRow (ipAdress);
+        lay.addRow(new QLabel("Adres IP serwera:"));
+        QLineEdit *ipAdress = new QLineEdit (&dialog);
+        ipAdress->setInputMask("000.000.000.000;_");
+        lay.addRow (ipAdress);
 
-    lay.addRow(new QLabel("Port serwera:"));
-    QLineEdit *portNumber = new QLineEdit (&dialog);
-    portNumber->setInputMask("00000;_");
-    lay.addRow(portNumber);
+        lay.addRow(new QLabel("Port serwera:"));
+        QLineEdit *portNumber = new QLineEdit (&dialog);
+        portNumber->setInputMask("00000;_");
+        lay.addRow(portNumber);
 
-    // Dodaj przycisk Anuluj i OK
-    QDialogButtonBox buttonBox (QDialogButtonBox :: Ok | QDialogButtonBox :: Cancel                                ,
-        Qt :: Horizontal, & dialog);
-    lay.addRow ( & buttonBox);
-    QObject :: connect ( & buttonBox, SIGNAL (rejected ()), & dialog, SLOT (reject ()));
-    QObject :: connect ( & buttonBox, SIGNAL (accepted ()), & dialog, SLOT (accept ()));
-    if (dialog.exec() == QDialog::Accepted) {
+        // Dodaj przycisk Anuluj i OK
+        QDialogButtonBox buttonBox (QDialogButtonBox :: Ok | QDialogButtonBox :: Cancel                                ,
+                                    Qt :: Horizontal, & dialog);
+        lay.addRow ( & buttonBox);
+        QObject :: connect ( & buttonBox, SIGNAL (rejected ()), & dialog, SLOT (reject ()));
+        QObject :: connect ( & buttonBox, SIGNAL (accepted ()), & dialog, SLOT (accept ()));
+        if (dialog.exec() == QDialog::Accepted) {
 
-        socket->setIpAdress(ipAdress->text());
+            socket->setIpAdress(ipAdress->text());
 
-        if(portNumber->text().isEmpty())
-            socket->setPortNumber(0);
-        else
-         socket->setPortNumber(portNumber->text().toInt());
+            if(portNumber->text().isEmpty())
+                socket->setPortNumber(0);
+            else
+                socket->setPortNumber(portNumber->text().toInt());
+        }
     }
-
 }
 
 void MainWindow::on_actionInformacje_triggered()
@@ -146,4 +183,31 @@ void MainWindow::on_actionInformacje_triggered()
     lay.addRow ( & buttonBox);
     QObject :: connect ( & buttonBox, SIGNAL (accepted ()), & dialog, SLOT (reject ()));
     dialog.exec();
+}
+
+void MainWindow::on_ord2_clicked()
+{
+    qDebug()<<"ord2 klik";
+    changeOrderState(ui->ord2->text().toInt(),2);
+}
+
+void MainWindow::on_actionConnect_triggered()
+{
+    if(socket->state() == QAbstractSocket::ConnectedState)
+        QMessageBox::information(this,"Błąd","Zostało już nawiązane połączenie z serwerem."
+                                             "Zakończ obecne połączenie aby nawiązać inne,");
+    else
+        socket->connectToServer();
+}
+
+void MainWindow::on_actionDisconnect_triggered()
+{
+    if(socket->state() == QAbstractSocket::ConnectedState)
+        socket->disconnectFromServer();
+    else
+        QMessageBox::information(this,"Błąd","Brak połączenia które można zakończyć.");
+}
+
+void MainWindow::disconnectApprove(){
+    QMessageBox::information(this,"Disconnected","Rozłączono");
 }

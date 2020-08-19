@@ -16,6 +16,31 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="maximumSize">
+         <size>
+          <width>300</width>
+          <height>100</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>30</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Zamówienia</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QPushButton" name="ord1">
@@ -49,7 +74,7 @@
          </font>
         </property>
         <property name="text">
-         <string>2</string>
+         <string>21</string>
         </property>
        </widget>
       </item>
@@ -73,26 +98,6 @@
       </item>
      </layout>
     </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2"/>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_3">
-      <item>
-       <widget class="QPushButton" name="connectButton">
-        <property name="maximumSize">
-         <size>
-          <width>200</width>
-          <height>50</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Połącz</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -108,6 +113,8 @@
     <property name="title">
      <string>Ustawienia</string>
     </property>
+    <addaction name="actionConnect"/>
+    <addaction name="actionDisconnect"/>
     <addaction name="actionKonfiguracja"/>
     <addaction name="separator"/>
     <addaction name="actionInformacje"/>
@@ -123,6 +130,16 @@
   <action name="actionInformacje">
    <property name="text">
     <string>Informacje</string>
+   </property>
+  </action>
+  <action name="actionConnect">
+   <property name="text">
+    <string>Połącz</string>
+   </property>
+  </action>
+  <action name="actionDisconnect">
+   <property name="text">
+    <string>Rozłącz</string>
    </property>
   </action>
  </widget>

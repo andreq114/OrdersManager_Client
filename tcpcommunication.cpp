@@ -14,12 +14,21 @@ void TcpCommunication::connectToServer(){
                              port);
 }
 
+void TcpCommunication::disconnectFromServer(){
+    disconnectFromHost();
+    if(this->state() == QAbstractSocket::UnconnectedState){
+        emit disconnect();
+    }
+}
+
 void TcpCommunication::changeOrderState(int order,int state)//Zmiana stanu danego zamówienia
 {
     qDebug()<<"Socket dostał";
+    qDebug()<<"Zamowienie numer "<<order;
     QString tekst = "ORDER/" + QString::number(order)+"/STATE#"+QString::number(state)+"#";    //Dane o numerze zamowienia i stanie wysylane do serwera
     QByteArray block;
     block.append(tekst);
+    waitForBytesWritten(3000);
     this->write(block);
     qDebug()<<tekst;
     qDebug()<<"Wyslalem do serwera";
@@ -40,19 +49,19 @@ int TcpCommunication::getPortNumber(){
 }
 
 void TcpCommunication::connectSignals(){
-    connect(this, &QIODevice::readyRead, this, &TcpCommunication::readDataFromServer);
+
+
 }
 
 void TcpCommunication::readDataFromServer(){
-    QByteArray sock = this->readLine();
-    qDebug()<<"Odebralem cos";
-    QString data = sock;
-    qDebug()<<sock;
-    if(sock == "ACCEPT"){
-        //QMessageBox::information(this,"Akceptacja","Połączono");
-    }else{
-        //QMessageBox::information(this,"Ramka",nextFortune);
-    }
-    //ui->statusLabel->setText(nextFortune);
-   // ui->connectButton->setEnabled(true);
+//    QByteArray sock = this->readAll();
+//    qDebug()<<"Odebralem cos";
+//    QString data = sock;
+//    qDebug()<<sock;
+//    if(data.at(0) == "$"){
+//        emit connectOk();
+//    }
+//    emit refOrders(data);
+//    //ui->statusLabel->setText(nextFortune);
+//   // ui->connectButton->setEnabled(true);
 }
