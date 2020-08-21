@@ -7,9 +7,14 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     socket = new TcpCommunication(this);
+    orderAction = new OrderActionWindow();
+    myThread = new Thread(this);
+    myThread->start();
+
     connectSignals();
     addOrdButtons();
-    connectButtonsWithSlots();
+    QScroller::grabGesture(ui->scrollArea, QScroller::LeftMouseButtonGesture);
+
 }
 
 MainWindow::~MainWindow()
@@ -18,6 +23,9 @@ MainWindow::~MainWindow()
 
     socket->abort();
     delete socket;
+    delete orderAction;
+    myThread->terminate();
+    delete myThread;
 }
 
 void MainWindow::readData()             //Odczytywanie danych z serwera, domyslnie odczyt listy zamowien i stanów
@@ -35,9 +43,19 @@ void MainWindow::readData()             //Odczytywanie danych z serwera, domysln
 }
 
 void MainWindow::connectSignals(){
+    //CONNECTY KOMUNIKACJI Z SERWEREM
     connect(socket, &QIODevice::readyRead, this, &MainWindow::readData);
     connect(socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(displayError(QAbstractSocket::SocketError)));
     connect(socket,SIGNAL(disconnect()),this,SLOT(disconnectApprove()));
+
+    //CONNECTY Z OKNEM DIALOGOWYM DO WYBORU AKCJI DANEGO ZAMOWIENIA
+    connect(orderAction,SIGNAL(setFullReadyOrder(int)),this,SLOT(setFullReadyOrd(int)));
+    connect(orderAction,SIGNAL(setPartReadyOrder(int)),this,SLOT(setPartReadyOrd(int)));
+    connect(orderAction,SIGNAL(setNotReadyOrder(int)),this,SLOT(setNotReadyOrd(int)));
+    connect(orderAction,SIGNAL(deleteOrder(int)),this,SLOT(deleteOrd(int)));
+
+    //CONNECT Z WĄTKIEM
+    connect(myThread,SIGNAL(refreshTime()),this,SLOT(refTime()));
 }
 
 void MainWindow::connectApprove(){
@@ -47,8 +65,12 @@ void MainWindow::connectApprove(){
 void MainWindow::getOrdersListFromString(QString data){
     QVector<int> ordIndTemp;
     QVector<int> stateIndTemp;
+    QVector<int> timeIndTemp;
+    QVector<int> nextOrderIndTemp;
+
     orders.clear();
     ordersStates.clear();
+    timeList.clear();
 
     qDebug()<<"Przetwarzam stringa";
     for(int i=0;i<data.length();i++){
@@ -56,6 +78,10 @@ void MainWindow::getOrdersListFromString(QString data){
             ordIndTemp.append(i);
         if(data.at(i) == "^")
             stateIndTemp.append(i);
+        if(data.at(i) == "#")
+            timeIndTemp.append(i);
+        if(data.at(i) == "@")
+            nextOrderIndTemp.append(i);
     }
     for(int i=0;i<ordIndTemp.length()-1;i++){
         QString ord = data.mid((ordIndTemp.at(i)+1),ordIndTemp.at(i+1)-ordIndTemp.at(i)-1);
@@ -63,40 +89,85 @@ void MainWindow::getOrdersListFromString(QString data){
     }
 
     for(int i=0;i<stateIndTemp.length()-1;i++){
-        QString ord = data.mid((stateIndTemp.at(i)+1),stateIndTemp.at(i+1)-stateIndTemp.at(i)-1);
-        orders.append(ord.toInt());
+        QString ordState = data.mid((stateIndTemp.at(i)+1),stateIndTemp.at(i+1)-stateIndTemp.at(i)-1);
+        ordersStates.append(ordState.toInt());
     }
+
+    for(int i=0;i<timeIndTemp.length()-1;i++){
+        QString ordTime = data.mid((timeIndTemp.at(i)+1),timeIndTemp.at(i+1)-timeIndTemp.at(i)-1);
+        qDebug()<<"Dodaje czas "<<ordTime;
+        timeList.append(QTime::fromString(ordTime,"hh:mm:ss"));
+    }
+    for(int i=0;i<nextOrderIndTemp.length()-1;i++){
+        QString nextOrd = data.mid((nextOrderIndTemp.at(i)+1),nextOrderIndTemp.at(i+1)-nextOrderIndTemp.at(i)-1);
+        nextOrder = nextOrd.toInt();
+    }
+    nextOrder = *std::max_element(orders.constBegin(),orders.constEnd())+1;
+    qDebug()<<"Przed refreshem";
     refreshOrdersList();
+    qDebug()<<"Po refreshu";
+    refTime();
+    qDebug()<<"Po reftime";
 
 
 }
 
-void MainWindow::changeOrderState(int order,int state){
+/*void MainWindow::changeOrderState(int order,int state){
     qDebug()<<"Wysylam do socketa";
     socket->changeOrderState(order,state);
-}
+}*/
 
 void MainWindow::refreshOrdersList(){
+    for(int i=0;i<orderButtons.length();i++){
+        orderButtons.at(i)->setVisible(false);
+        timeLabels.at(i)->setVisible(false);
+    }
+    for(int i=0;i<orders.length();i++){
+        orderButtons.at(i)->setVisible(true);
+        timeLabels.at(i)->setVisible(true);
+        orderButtons.at(i)->setText(QString::number(orders.at(i)));
+        if(ordersStates.at(i) == 1){
+            orderButtons.at(i)->setStyleSheet("background-color:rgb(255,255,0);");
+            timeLabels.at(i)->setStyleSheet("background-color:rgb(255,255,0);");
+        }else if(ordersStates.at(i) == 2){
+            orderButtons.at(i)->setStyleSheet("background-color:rgb(255,127,0);");
+            timeLabels.at(i)->setStyleSheet("background-color:rgb(255,127,0);");
+        }else if(ordersStates.at(i) == 3){
+            orderButtons.at(i)->setStyleSheet("background-color:rgb(0,255,0);");
+            timeLabels.at(i)->setStyleSheet("background-color:rgb(0,255,0);");
+        }
+    }
 
+    ui->nextOrderLabel->setText("Następny numer: "+QString::number(nextOrder));
 }
 
-void MainWindow::addOrdButtons(){
+void MainWindow::addOrdButtons()                        //Dodanie przyciskow zamowien przy starcie programu i poczatkowo konfiguracja
+{
     QPushButton *button;
     QLabel *time;
     QVBoxLayout *vlay;
+    ordersFont.setBold(true);
+    ordersFont.setPointSize(20);
+    timeFont.setPointSize(15);
     for(int i=0;i<50;i++){
         button = new QPushButton(this);
-        button->setStyleSheet("background-color:rgb(0,255,0);border:none;");
-        button->setMinimumSize(120,80);
-        button->setMaximumWidth(250);
-        button->setText("ORDER");
+        button->setStyleSheet("background-color:rgb(255,255,0);border:none;");
+        button->setMinimumSize(120,120);
+        button->setMaximumWidth(350);
+        button->setText(QString::number(0));
+        button->setVisible(false);
+        button->setFont(ordersFont);
+
+        connect(button,SIGNAL(clicked()),this,SLOT(orderButton_clicked()));
 
 
         time = new QLabel("empty");
         time->setStyleSheet("background-color:rgb(0,255,0);");
-        time->setMinimumSize(100,20);
+        time->setMinimumSize(120,20);
         time->setMaximumHeight(20);
         time->setAlignment(Qt::AlignCenter);
+        time->setVisible(false);
+        time->setFont(timeFont);
 
         vlay = new QVBoxLayout;
         vlay->setSpacing(0);
@@ -115,22 +186,32 @@ void MainWindow::addOrdButtons(){
     int col = 0;
 
     for(int i=1;i<=layouts.length();i++){
-
-        row = static_cast<int>(ceil((static_cast<double>(i)/5)))-1;
-        qDebug()<<row;
-        col = (i-1)%5;
-        qDebug()<<col;
+        row = static_cast<int>(ceil((static_cast<double>(i)/4)))-1;
+        col = (i-1)%4;
 
         lay->addLayout(layouts.at(i-1),row,col);
         ui->ordersArea->setLayout(lay);
-
-
-
     }
+
 
  }
 
+void MainWindow::refTime(){
 
+    for(int i=0;i<timeList.length();i++){
+        QString czas2;
+        QString czas;
+        if(QTime::currentTime() >= timeList.at(i))          //Bez tego warunku,czas zamowienia z poprzedniego dnia ( po polnocy ) byl by ujemny
+            czas = QTime::fromMSecsSinceStartOfDay(QTime::currentTime().msecsSinceStartOfDay()-timeList.at(i).msecsSinceStartOfDay()).toString();       //Aktualna godzina minus godzina przyjecia zamowienia
+        else
+            czas = QTime::fromMSecsSinceStartOfDay(QTime::currentTime().msecsSinceStartOfDay()-timeList.at(i).msecsSinceStartOfDay()+86400000).toString();      //Jesli zamowienie przyjeto przed polnoca a jest po polnocy, to godzina przyjecia zamowienia minus aktualna godzina plus 24h
+        for(int i=0;i<czas.length();i++){                   //Ucinamy godziny, wyswietlamy tylko minuty i sekundy
+            if(i > 2)
+                czas2.append(czas.at(i));
+        }
+        timeLabels.at(i)->setText(czas2);
+    }
+}
 
 
 
@@ -224,6 +305,7 @@ void MainWindow::on_actionConnect_triggered()
 }
 
 void MainWindow::on_actionDisconnect_triggered()
+
 {
     if(socket->state() == QAbstractSocket::ConnectedState)
         socket->disconnectFromServer();
@@ -231,10 +313,25 @@ void MainWindow::on_actionDisconnect_triggered()
         QMessageBox::information(this,"Błąd","Brak połączenia które można zakończyć.");
 }
 
-void MainWindow::disconnectApprove(){
+void MainWindow::disconnectApprove()                    //Potwierdzenie rozlaczenia z serwerem
+{
     QMessageBox::information(this,"Disconnected","Rozłączono");
 }
 
+
+//SLOT PO WYBRANIU DANEGO ZAMOWIENIA
+void MainWindow::orderButton_clicked(){
+
+    for(int i=0;i<orderButtons.length();i++){
+        if(orderButtons.at(i) == sender()){
+            qDebug()<<QString::number(i);
+            orderAction->showWindow(orderButtons.at(i)->text().toInt());
+        }
+    }
+
+}
+
+//AKCJE PRZYWRACANIA OSTATNIEGO ZAMOWIENIA,SYGNALU DZWIEKOWEGO I DODANIA NOWEGO ZAMOWIENIA
 void MainWindow::on_recoverBUtton_clicked()
 {
     socket->recoverLastOrder();
@@ -251,16 +348,24 @@ void MainWindow::on_addNewOrderButton_clicked()
 }
 
 
-
-void MainWindow::connectButtonsWithSlots(){
-    connect(orderButtons.at(0),SIGNAL(clicked()),this,SLOT(ord1_clicked()));
-    connect(orderButtons.at(1),SIGNAL(clicked()),this,SLOT(ord2_clicked()));
+//METODY PO WYBRANIU AKCJI NA DANYM ZAMOWIENIA
+void MainWindow::setFullReadyOrd(int order){
+    qDebug()<<"Ustawiam jako gotowe zamówienie numer "<<order;
+    orderAction->close();
+    socket->changeOrderState(order,3);
 }
-
-void MainWindow::ord1_clicked(){
-    qDebug()<<"Button pierwszy";
+void MainWindow::setPartReadyOrd(int order){
+    qDebug()<<"Ustawiam jako prawie gotowe zamówienie numer "<<order;
+    orderAction->close();
+    socket->changeOrderState(order,2);
 }
-
-void MainWindow::ord2_clicked(){
-    qDebug()<<"Button drugi";
+void MainWindow::setNotReadyOrd(int order){
+    qDebug()<<"Ustawiam jako nie gotowe zamówienie numer "<<order;
+    orderAction->close();
+    socket->changeOrderState(order,1);
+}
+void MainWindow::deleteOrd(int order){
+    qDebug()<<"Usuwam zamówienie numer "<<order;
+    orderAction->close();
+    socket->changeOrderState(order,4);
 }

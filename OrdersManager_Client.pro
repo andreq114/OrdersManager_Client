@@ -19,11 +19,15 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
-    tcpcommunication.cpp
+    orderactionwindow.cpp \
+    tcpcommunication.cpp \
+    thread.cpp
 
 HEADERS += \
     mainwindow.h \
-    tcpcommunication.h
+    orderactionwindow.h \
+    tcpcommunication.h \
+    thread.h
 
 FORMS += \
     mainwindow.ui

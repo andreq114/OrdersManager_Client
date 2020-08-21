@@ -22,6 +22,7 @@ void TcpCommunication::disconnectFromServer(){
 }
 
 
+//METODY DO WYSYLANIA ZADAN DO SERWERA
 void TcpCommunication::addNewOrder(){
     qDebug()<<"Dodaje nowe zamówienie";
     QString tekst = "ADD";
@@ -29,7 +30,7 @@ void TcpCommunication::addNewOrder(){
     block.append(tekst);
     waitForBytesWritten(3000);
     this->write(block);
-    qDebug()<<tekst;
+
     qDebug()<<"Wyslalem do serwera";
 }
 
@@ -71,7 +72,7 @@ void TcpCommunication::recoverLastOrder(){
 
 
 
-
+//GETTERY i SETTERY
 void TcpCommunication::setIpAdress(QString ip){
     ipAdr = ip;
 }

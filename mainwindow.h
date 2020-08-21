@@ -10,9 +10,13 @@
 #include <QDialogButtonBox>
 #include <QLabel>
 #include <tcpcommunication.h>
+#include <orderactionwindow.h>
 #include <QPushButton>
 #include <math.h>
-
+#include <QTime>
+#include <thread.h>
+#include <QScroller>
+#include <algorithm>
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -38,79 +42,44 @@ private slots:
     void disconnectApprove();
 
     void on_recoverBUtton_clicked();
-
     void on_soundButton_clicked();
-
     void on_addNewOrderButton_clicked();
+    void orderButton_clicked();
 
-    void ord1_clicked();
-    void ord2_clicked();
-    /*void ord3_clicked();
-    void ord4_clicked();
-    void ord5_clicked();
-    void ord6_clicked();
-    void ord7_clicked();
-    void ord8_clicked();
-    void ord9_clicked();
-    void ord10_clicked();
-    void ord11_clicked();
-    void ord12_clicked();
-    void ord13_clicked();
-    void ord14_clicked();
-    void ord15_clicked();
-    void ord16_clicked();
-    void ord17_clicked();
-    void ord18_clicked();
-    void ord19_clicked();
-    void ord20_clicked();
-    void ord21_clicked();
-    void ord22_clicked();
-    void ord23_clicked();
-    void ord24_clicked();
-    void ord25_clicked();
-    void ord26_clicked();
-    void ord27_clicked();
-    void ord28_clicked();
-    void ord29_clicked();
-    void ord30_clicked();
-    void ord31_clicked();
-    void ord32_clicked();
-    void ord33_clicked();
-    void ord34_clicked();
-    void ord35_clicked();
-    void ord36_clicked();
-    void ord37_clicked();
-    void ord38_clicked();
-    void ord39_clicked();
-    void ord40_clicked();
-    void ord41_clicked();
-    void ord42_clicked();
-    void ord43_clicked();
-    void ord44_clicked();
-    void ord45_clicked();
-    void ord46_clicked();
-    void ord47_clicked();
-    void ord48_clicked();
-    void ord49_clicked();
-    void ord50_clicked();*/
+    void setFullReadyOrd(int order);
+    void setPartReadyOrd(int order);
+    void setNotReadyOrd(int order);
+    void deleteOrd(int order);
+    void refTime();
+
 
 
 private:
     Ui::MainWindow *ui;
 
     TcpCommunication *socket;
+    OrderActionWindow *orderAction;
+
     QVector<int> orders;
     QVector<int> ordersStates;
+    QVector<QTime> timeList;
 
     QVector<QPushButton*> orderButtons;
     QVector<QLabel*> timeLabels;
     QVector<QVBoxLayout*> layouts;
 
+    QFont ordersFont;
+    QFont timeFont;
+
+    Thread *myThread;
+
+    int nextOrder = 0;
+
     void connectSignals();
-    void changeOrderState(int order,int state);
+    //void changeOrderState(int order,int state);
     void refreshOrdersList();
     void addOrdButtons();
-    void connectButtonsWithSlots();
+
 
 
 };

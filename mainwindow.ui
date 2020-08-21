@@ -25,23 +25,47 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="addNewOrderButton">
-        <property name="minimumSize">
-         <size>
-          <width>200</width>
-          <height>80</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>250</width>
-          <height>80</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Dodaj zamówienie</string>
-        </property>
-       </widget>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QPushButton" name="addNewOrderButton">
+          <property name="minimumSize">
+           <size>
+            <width>300</width>
+            <height>120</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>500</width>
+            <height>120</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>18</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Dodaj zamówienie</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="nextOrderLabel">
+          <property name="font">
+           <font>
+            <pointsize>21</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>TextLabel</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
        <widget class="QPushButton" name="soundButton">
@@ -90,7 +114,7 @@
            <x>0</x>
            <y>0</y>
            <width>787</width>
-           <height>408</height>
+           <height>317</height>
           </rect>
          </property>
         </widget>
