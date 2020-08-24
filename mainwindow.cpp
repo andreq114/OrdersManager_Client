@@ -24,7 +24,10 @@ MainWindow::~MainWindow()
     socket->abort();
     delete socket;
     delete orderAction;
-    myThread->terminate();
+    if(myThread->isRunning()){
+        myThread->terminate();
+        myThread->wait();
+    }
     delete myThread;
 }
 
@@ -368,4 +371,9 @@ void MainWindow::deleteOrd(int order){
     qDebug()<<"Usuwam zamówienie numer "<<order;
     orderAction->close();
     socket->changeOrderState(order,4);
+}
+
+void MainWindow::on_actionServerFullScreen_triggered()
+{
+    socket->setFullScreen();
 }

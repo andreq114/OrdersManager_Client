@@ -19,6 +19,7 @@ public:
     void changeOrderState(int order,int state);
     void useSoundSignal();
     void recoverLastOrder();
+    void setFullScreen();
 
     QString getIpAdress();
     int getPortNumber();

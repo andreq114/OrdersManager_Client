@@ -70,6 +70,16 @@ void TcpCommunication::recoverLastOrder(){
     qDebug()<<"Wyslalem do serwera";
 }
 
+void TcpCommunication::setFullScreen(){
+    qDebug()<<"Wysylam o wlaczenie/wylaczenie full screena";
+    QString tekst = "FULLSCREEN";
+    QByteArray block;
+    block.append(tekst);
+    waitForBytesWritten(3000);
+    this->write(block);
+    qDebug()<<tekst;
+    qDebug()<<"Wyslalem do serwera";
+}
 
 
 //GETTERY i SETTERY

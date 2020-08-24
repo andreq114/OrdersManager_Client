@@ -54,6 +54,8 @@ private slots:
 
 
 
+    void on_actionServerFullScreen_triggered();
+
 private:
     Ui::MainWindow *ui;
 

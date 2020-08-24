@@ -142,6 +142,7 @@
     <addaction name="actionKonfiguracja"/>
     <addaction name="separator"/>
     <addaction name="actionInformacje"/>
+    <addaction name="actionServerFullScreen"/>
    </widget>
    <addaction name="menuUstawienia"/>
   </widget>
@@ -164,6 +165,11 @@
   <action name="actionDisconnect">
    <property name="text">
     <string>Rozłącz</string>
+   </property>
+  </action>
+  <action name="actionServerFullScreen">
+   <property name="text">
+    <string>Pelny Ekran Serwera</string>
    </property>
   </action>
  </widget>
