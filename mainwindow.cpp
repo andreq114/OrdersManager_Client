@@ -105,7 +105,7 @@ void MainWindow::getOrdersListFromString(QString data){
         QString nextOrd = data.mid((nextOrderIndTemp.at(i)+1),nextOrderIndTemp.at(i+1)-nextOrderIndTemp.at(i)-1);
         nextOrder = nextOrd.toInt();
     }
-    nextOrder = *std::max_element(orders.constBegin(),orders.constEnd())+1;
+    //nextOrder = *std::max_element(orders.constBegin(),orders.constEnd())+1;
     qDebug()<<"Przed refreshem";
     refreshOrdersList();
     qDebug()<<"Po refreshu";
