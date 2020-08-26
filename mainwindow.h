@@ -17,6 +17,8 @@
 #include <thread.h>
 #include <QScroller>
 #include <algorithm>
+#include <dbmanager.h>
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -56,11 +58,16 @@ private slots:
 
     void on_actionServerFullScreen_triggered();
 
+    void on_actionOrders_reset_triggered();
+
+    void on_actionFullScreen_triggered();
+
 private:
     Ui::MainWindow *ui;
 
     TcpCommunication *socket;
     OrderActionWindow *orderAction;
+    dbmanager *db;
 
     QVector<int> orders;
     QVector<int> ordersStates;

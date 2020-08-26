@@ -81,6 +81,16 @@ void TcpCommunication::setFullScreen(){
     qDebug()<<"Wyslalem do serwera";
 }
 
+void TcpCommunication::resetOrders(){
+    qDebug()<<"Wysylam zadanie resetu zamówień";
+    QString tekst = "RESET";
+    QByteArray block;
+    block.append(tekst);
+    waitForBytesWritten(3000);
+    this->write(block);
+
+}
+
 
 //GETTERY i SETTERY
 void TcpCommunication::setIpAdress(QString ip){

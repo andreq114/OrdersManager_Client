@@ -20,6 +20,7 @@ public:
     void useSoundSignal();
     void recoverLastOrder();
     void setFullScreen();
+    void resetOrders();
 
     QString getIpAdress();
     int getPortNumber();

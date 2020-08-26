@@ -10,6 +10,10 @@ MainWindow::MainWindow(QWidget *parent)
     orderAction = new OrderActionWindow();
     myThread = new Thread(this);
     myThread->start();
+    db = new dbmanager(this);
+
+    socket->setIpAdress(db->readIp_fromDb());
+    socket->setPortNumber(db->readPort_fromDb());
 
     connectSignals();
     addOrdButtons();
@@ -98,7 +102,6 @@ void MainWindow::getOrdersListFromString(QString data){
 
     for(int i=0;i<timeIndTemp.length()-1;i++){
         QString ordTime = data.mid((timeIndTemp.at(i)+1),timeIndTemp.at(i+1)-timeIndTemp.at(i)-1);
-        qDebug()<<"Dodaje czas "<<ordTime;
         timeList.append(QTime::fromString(ordTime,"hh:mm:ss"));
     }
     for(int i=0;i<nextOrderIndTemp.length()-1;i++){
@@ -121,6 +124,10 @@ void MainWindow::getOrdersListFromString(QString data){
 }*/
 
 void MainWindow::refreshOrdersList(){
+    qDebug()<<"Ilosc buttonów "<<orderButtons.length();
+    qDebug()<<"Ilosc labeli "<<timeLabels.length();
+    qDebug()<<"Ilosc zzamowien "<<orders.length();
+    qDebug()<<"Ilosc stanow "<<ordersStates.length();
     for(int i=0;i<orderButtons.length();i++){
         orderButtons.at(i)->setVisible(false);
         timeLabels.at(i)->setVisible(false);
@@ -150,13 +157,13 @@ void MainWindow::addOrdButtons()                        //Dodanie przyciskow zam
     QLabel *time;
     QVBoxLayout *vlay;
     ordersFont.setBold(true);
-    ordersFont.setPointSize(20);
+    ordersFont.setPointSize(40);
     timeFont.setPointSize(15);
     for(int i=0;i<50;i++){
         button = new QPushButton(this);
         button->setStyleSheet("background-color:rgb(255,255,0);border:none;");
         button->setMinimumSize(120,120);
-        button->setMaximumWidth(350);
+        button->setMaximumSize(350,200);
         button->setText(QString::number(0));
         button->setVisible(false);
         button->setFont(ordersFont);
@@ -250,16 +257,21 @@ void MainWindow::on_actionKonfiguracja_triggered()
         QMessageBox::information(this,"Błąd","Przerwij najpierw aktualne połączenie");
     }else{
         QDialog dialog(this);
+        QFont font;
+        font.setPointSize(30);
         QFormLayout lay(&dialog);
+
 
         lay.addRow(new QLabel("Adres IP serwera:"));
         QLineEdit *ipAdress = new QLineEdit (&dialog);
+
         ipAdress->setInputMask("000.000.000.000;_");
         lay.addRow (ipAdress);
 
         lay.addRow(new QLabel("Port serwera:"));
         QLineEdit *portNumber = new QLineEdit (&dialog);
         portNumber->setInputMask("00000;_");
+
         lay.addRow(portNumber);
 
         // Dodaj przycisk Anuluj i OK
@@ -276,6 +288,8 @@ void MainWindow::on_actionKonfiguracja_triggered()
                 socket->setPortNumber(0);
             else
                 socket->setPortNumber(portNumber->text().toInt());
+
+            db->addIp_port_toDb(socket->getIpAdress(),socket->getPortNumber());
         }
     }
 }
@@ -302,7 +316,7 @@ void MainWindow::on_actionConnect_triggered()
 {
     if(socket->state() == QAbstractSocket::ConnectedState)
         QMessageBox::information(this,"Błąd","Zostało już nawiązane połączenie z serwerem."
-                                             "Zakończ obecne połączenie aby nawiązać inne,");
+                                             );
     else
         socket->connectToServer();
 }
@@ -313,7 +327,7 @@ void MainWindow::on_actionDisconnect_triggered()
     if(socket->state() == QAbstractSocket::ConnectedState)
         socket->disconnectFromServer();
     else
-        QMessageBox::information(this,"Błąd","Brak połączenia które można zakończyć.");
+        QMessageBox::information(this,"Błąd","Żadne połączenie nie jest aktualnie nawiązane.");
 }
 
 void MainWindow::disconnectApprove()                    //Potwierdzenie rozlaczenia z serwerem
@@ -325,19 +339,26 @@ void MainWindow::disconnectApprove()                    //Potwierdzenie rozlacze
 //SLOT PO WYBRANIU DANEGO ZAMOWIENIA
 void MainWindow::orderButton_clicked(){
 
-    for(int i=0;i<orderButtons.length();i++){
-        if(orderButtons.at(i) == sender()){
-            qDebug()<<QString::number(i);
-            orderAction->showWindow(orderButtons.at(i)->text().toInt());
+    if(socket->state() == QAbstractSocket::ConnectedState){
+        for(int i=0;i<orderButtons.length();i++){
+            if(orderButtons.at(i) == sender()){
+                orderAction->showWindow(orderButtons.at(i)->text().toInt());
+            }
         }
     }
+    else
+        QMessageBox::information(this,"Błąd","Brak połączenia z serwerem. Upewnij się, że połączenie zostało nawiązane.");
+
 
 }
 
 //AKCJE PRZYWRACANIA OSTATNIEGO ZAMOWIENIA,SYGNALU DZWIEKOWEGO I DODANIA NOWEGO ZAMOWIENIA
 void MainWindow::on_recoverBUtton_clicked()
 {
-    socket->recoverLastOrder();
+    if(orders.length()<orderButtons.length())
+        socket->recoverLastOrder();
+    else
+        QMessageBox::information(this,"Błąd","Osiągnięto maksymalną liczbę zamówień jednocześnie.");
 }
 
 void MainWindow::on_soundButton_clicked()
@@ -347,7 +368,14 @@ void MainWindow::on_soundButton_clicked()
 
 void MainWindow::on_addNewOrderButton_clicked()
 {
-    socket->addNewOrder();
+    qDebug()<<"Liczba zamowien";
+    if(socket->state() == QAbstractSocket::ConnectedState)
+        if(orders.length() < orderButtons.length())
+            socket->addNewOrder();
+        else
+            QMessageBox::information(this,"Błąd","Osiągnięto maksymalną liczbę zamówień jednocześnie.");
+    else
+        QMessageBox::information(this,"Błąd","Brak połączenia z serwerem. Upewnij się, że połączenie zostało nawiązane.");
 }
 
 
@@ -375,5 +403,25 @@ void MainWindow::deleteOrd(int order){
 
 void MainWindow::on_actionServerFullScreen_triggered()
 {
-    socket->setFullScreen();
+    if(socket->state() == QAbstractSocket::ConnectedState)
+        socket->setFullScreen();
+    else
+        QMessageBox::information(this,"Błąd","Brak połączenia z serwerem. Upewnij się, że połączenie zostało nawiązane.");
+}
+
+void MainWindow::on_actionOrders_reset_triggered()
+{
+    if(socket->state() == QAbstractSocket::ConnectedState)
+        socket->resetOrders();
+    else
+        QMessageBox::information(this,"Błąd","Brak połączenia z serwerem. Upewnij się, że połączenie zostało nawiązane.");
+}
+
+void MainWindow::on_actionFullScreen_triggered()
+{
+    if(this->isFullScreen()){
+        this->setWindowState(Qt::WindowMaximized);
+    }else{
+        this->setWindowState(Qt::WindowFullScreen);
+    }
 }

@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/soundButton.png</file>
+        <file>img/backbutt.png</file>
+    </qresource>
+</RCC>
