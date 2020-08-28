@@ -42,33 +42,37 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QPushButton" name="addNewOrderButton">
-          <property name="minimumSize">
-           <size>
-            <width>300</width>
-            <height>150</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>500</width>
-            <height>150</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>24</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">background-color: rgb(199, 199, 199);</string>
-          </property>
-          <property name="text">
-           <string>Dodaj zamówienie</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QPushButton" name="addNewOrderButton">
+            <property name="minimumSize">
+             <size>
+              <width>300</width>
+              <height>150</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>500</width>
+              <height>150</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>24</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(199, 199, 199);</string>
+            </property>
+            <property name="text">
+             <string>Dodaj zamówienie</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
          <widget class="QLabel" name="nextOrderLabel">
@@ -80,7 +84,7 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>500</width>
+            <width>600</width>
             <height>60</height>
            </size>
           </property>
@@ -163,7 +167,7 @@
            <x>0</x>
            <y>0</y>
            <width>787</width>
-           <height>269</height>
+           <height>267</height>
           </rect>
          </property>
         </widget>

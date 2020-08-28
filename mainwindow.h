@@ -18,6 +18,7 @@
 #include <QScroller>
 #include <algorithm>
 #include <dbmanager.h>
+#include <QCloseEvent>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -33,61 +34,64 @@ public:
 
 private slots:
 
-    void readData();
-    void displayError(QAbstractSocket::SocketError socketError);
-    void on_actionKonfiguracja_triggered();
-    void on_actionInformacje_triggered();
-    void connectApprove();
-    void getOrdersListFromString(QString data);
-    void on_actionConnect_triggered();
-    void on_actionDisconnect_triggered();
-    void disconnectApprove();
+    void readData();                                                                //Metoda odbierajaca potwierdzenie połączenia/liste zamowien,stanów i czasów od serwera przez socket
+    void displayError(QAbstractSocket::SocketError socketError);                    //Metoda wyswietlajaca błąd jesli połączenie się nie powiedzie
+    void on_actionKonfiguracja_triggered();                                         //Slot po wcisnieciu przycisku konfiguracji, wyswietlajacy okienko do edycji ip/portu
+    void on_actionInformacje_triggered();                                           //Slot po wcisnieciu przycisku informacji, wyswietlajacy aktualnie ustawione ip/port
+    void on_actionConnect_triggered();                                              //Slot po wcisnieciu przycisku Połącz, wykonujący próbe połączenie z serwerem
+    void on_actionDisconnect_triggered();                                           //Slot po wcisnieciu przycisku Rozłącz, kończący połączenie z serwerem
+    void disconnectApprove();                                                       //Slot wyświetlający potwierdzenie zakończenia połączenia z serwerem
 
-    void on_recoverBUtton_clicked();
-    void on_soundButton_clicked();
-    void on_addNewOrderButton_clicked();
-    void orderButton_clicked();
+    void on_recoverBUtton_clicked();                                                //Slot po wcisnieciu przycisku przywroc zamowienie, wysylajacy sygnal do socketa o przywroceni zamowienia
+    void on_soundButton_clicked();                                                  //Slot po wcisnieciu przycisku sygnalu dzwiekowego, wysylajacy sygnal do socketa o wywolanie sygnalu dzwiekowego
+    void on_addNewOrderButton_clicked();                                            //Slot po wcisnieciu przycisku dodaj nowe zamowienie, wysylajacy sygnal do socketa o dodanie nowego zamowienia
+    void orderButton_clicked();                                                     //Slot po wcisnieciu przyciskow zamowien, pokazujacy okno o wybranie akcji na danym zamowieniu
 
-    void setFullReadyOrd(int order);
+    void setFullReadyOrd(int order);                                                //Sloty akcji na danym zamowieniu, wysylajace sygnal do socketa o wywolanie akcji na danym zamowieniu
     void setPartReadyOrd(int order);
     void setNotReadyOrd(int order);
     void deleteOrd(int order);
-    void refTime();
+
+    void refTime();                                                                 //Slot polaczony z wątkiem odswiezajacy czas jaki minął od dodania zamowienia
 
 
 
-    void on_actionServerFullScreen_triggered();
+    void on_actionServerFullScreen_triggered();                                     //Slot po wcisnieciu przycisku "Pełny Ekran Serwera", wywołujący metode socketa o włączenie trybu pełnego ekranu w oknie widocznym dla klientów na serwerze
 
-    void on_actionOrders_reset_triggered();
+    void on_actionOrders_reset_triggered();                                         //Slot po wcisnieciu przycisku "Resetuj zamówienia", wywołujący metoda socketa o zresetowanie stanu zamówien na serwerze
 
-    void on_actionFullScreen_triggered();
+    void on_actionFullScreen_triggered();                                           //Slot po wcisnieciu przycisku "Pełny Ekran", włączający pełny ekran aktualnej aplikacji
 
 private:
     Ui::MainWindow *ui;
 
-    TcpCommunication *socket;
-    OrderActionWindow *orderAction;
-    dbmanager *db;
+    TcpCommunication *socket;                                                       //Socket do połącznie z serwerem
+    OrderActionWindow *orderAction;                                                 //Okienko do wybrania akcji na danym zamówieniu
+    dbmanager *db;                                                                  //Klasa  do operowania na bazie danych
+    Thread *myThread;                                                               //Klasa z wątkiem odświeżającym czasy od przyjecia danych zamowień
 
-    QVector<int> orders;
-    QVector<int> ordersStates;
-    QVector<QTime> timeList;
+    QVector<int> orders;                                                            //Lista zamówień
+    QVector<int> ordersStates;                                                      //Lista stanów danych zamówień
+    QVector<QTime> timeList;                                                        //Lista czasów danych zamówień , te trzy listy są ze sobą powiązane indeksami
 
-    QVector<QPushButton*> orderButtons;
-    QVector<QLabel*> timeLabels;
-    QVector<QVBoxLayout*> layouts;
+    QVector<QPushButton*> orderButtons;                                             //Lista przycisków odpowiadajacych danym zamówieniom
+    QVector<QLabel*> timeLabels;                                                    //Lista labelów odpowiadajacych czasom danych zamówień, powiązane z buttonami indeksami
+    QVector<QVBoxLayout*> layouts;                                                  //Lista layoutów na powyższe przyciski i labele
+    QGridLayout *lay;                                                               //Layout na wszystkie layouty z buttonami/labelami
 
-    QFont ordersFont;
+    QFont ordersFont;                                                               //Czcionki dla buttonów i labeli z czasami
     QFont timeFont;
 
-    Thread *myThread;
 
-    int nextOrder = 0;
+    int nextOrder = 0;                                                              //Numer nastepnego zamowienia
 
-    void connectSignals();
-    //void changeOrderState(int order,int state);
-    void refreshOrdersList();
-    void addOrdButtons();
+    void connectSignals();                                                          //Metoda tworząca połączenie sygnałów i slotów z wątkiem,socketem i bazą danych
+    void refreshOrdersList();                                                       //Metoda odswiezajaca liste zamówień i ich stanów
+    void addOrdButtons();                                                           //Metoda dodająca statycznie 50 buttonów na początku programu
+    void connectApprove();                                                          //Metoda wyswietlajaca potwierdzenie polaczenia z serwerem
+    void getOrdersListFromString(QString data);                                     //Metoda wyłuskająca liste zamówień/stanów/czasów z łańcucha znaków
+
+    void closeEvent(QCloseEvent *event);
 
 
 

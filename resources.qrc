@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>img/soundButton.png</file>
         <file>img/backbutt.png</file>
+        <file>img/clientIcon.ico</file>
     </qresource>
 </RCC>

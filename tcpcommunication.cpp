@@ -21,69 +21,28 @@ void TcpCommunication::disconnectFromServer(){
     }
 }
 
-
-//METODY DO WYSYLANIA ZADAN DO SERWERA
-void TcpCommunication::addNewOrder(){
-    qDebug()<<"Dodaje nowe zamówienie";
-    QString tekst = "ADD";
-    QByteArray block;
-    block.append(tekst);
-    waitForBytesWritten(3000);
-    this->write(block);
-
-    qDebug()<<"Wyslalem do serwera";
-}
-
-void TcpCommunication::changeOrderState(int order,int state)//Zmiana stanu danego zamówienia
-{
-    qDebug()<<"Socket dostał";
-    qDebug()<<"Zamowienie numer "<<order;
-    QString tekst = "ORDER/" + QString::number(order)+"/STATE#"+QString::number(state)+"#";    //Dane o numerze zamowienia i stanie wysylane do serwera
-    QByteArray block;
-    block.append(tekst);
-    waitForBytesWritten(3000);
-    this->write(block);
-    qDebug()<<tekst;
-    qDebug()<<"Wyslalem do serwera";
-
-}
-
-void TcpCommunication::useSoundSignal(){
-    qDebug()<<"Wysylam komende do uzycia sygnalu dzwiekowego";
-    QString tekst = "SOUND";
-    QByteArray block;
-    block.append(tekst);
-    waitForBytesWritten(3000);
-    this->write(block);
-    qDebug()<<tekst;
-    qDebug()<<"Wyslalem do serwera";
-}
-
-void TcpCommunication::recoverLastOrder(){
-    qDebug()<<"Wysylam komende o odzyskanie ostatnio usunietego zamowienia";
-    QString tekst = "RECOVER";
-    QByteArray block;
-    block.append(tekst);
-    waitForBytesWritten(3000);
-    this->write(block);
-    qDebug()<<tekst;
-    qDebug()<<"Wyslalem do serwera";
-}
-
 void TcpCommunication::setFullScreen(){
-    qDebug()<<"Wysylam o wlaczenie/wylaczenie full screena";
     QString tekst = "FULLSCREEN";
     QByteArray block;
     block.append(tekst);
     waitForBytesWritten(3000);
     this->write(block);
-    qDebug()<<tekst;
-    qDebug()<<"Wyslalem do serwera";
 }
 
-void TcpCommunication::resetOrders(){
-    qDebug()<<"Wysylam zadanie resetu zamówień";
-    QString tekst = "RESET";
+
+
+void TcpCommunication::addNewOrder(){
+
+    QString tekst = "ADD";
+    QByteArray block;
+    block.append(tekst);
+    waitForBytesWritten(3000);
+    this->write(block);
+}
+
+void TcpCommunication::changeOrderState(int order,int state)
+{
+    QString tekst = "ORDER/" + QString::number(order)+"/STATE#"+QString::number(state)+"#";    //Dane o numerze zamowienia i stanie wysylane do serwera
     QByteArray block;
     block.append(tekst);
     waitForBytesWritten(3000);
@@ -91,17 +50,44 @@ void TcpCommunication::resetOrders(){
 
 }
 
+void TcpCommunication::useSoundSignal(){
+    QString tekst = "SOUND";
+    QByteArray block;
+    block.append(tekst);
+    waitForBytesWritten(3000);
+    this->write(block);
+}
 
-//GETTERY i SETTERY
+void TcpCommunication::recoverLastOrder(){
+    QString tekst = "RECOVER";
+    QByteArray block;
+    block.append(tekst);
+    waitForBytesWritten(3000);
+    this->write(block);
+}
+
+void TcpCommunication::resetOrders(){
+    QString tekst = "RESET";
+    QByteArray block;
+    block.append(tekst);
+    waitForBytesWritten(3000);
+    this->write(block);
+}
+
+
+
 void TcpCommunication::setIpAdress(QString ip){
     ipAdr = ip;
 }
+
 void TcpCommunication::setPortNumber(int port){
     this->port = QString::number(port).toUShort();
 }
+
 QString TcpCommunication::getIpAdress(){
     return ipAdr;
 }
+
 int TcpCommunication::getPortNumber(){
     return this->port;
 }

@@ -6,20 +6,24 @@ OrderActionWindow::OrderActionWindow(QWidget *parent) : QDialog(parent){
 
 OrderActionWindow::~OrderActionWindow(){
     delete orderNumberLabel;
+    delete fullReadyButton;
+    delete partReadyButton;
+    delete notReadyButton;
+    delete deleteOrderButton;
+    delete lay;
 
 };
 
 void OrderActionWindow::setWindowPreferences(){
+    //Metoda do rysowania gui
     this->setMinimumSize(500,600);
     this->setMaximumSize(400,400);
 
-
-    //this->setWindowFlags(Qt::WindowTitleHint);
     this->setWindowFlag(Qt::WindowStaysOnTopHint);
 
     setFonts();
 
-    QVBoxLayout *lay = new QVBoxLayout(this);
+    lay = new QVBoxLayout(this);
 
     orderNumberLabel = new QLabel();
     orderNumberLabel->setAlignment(Qt::AlignCenter);
@@ -62,6 +66,9 @@ void OrderActionWindow::setWindowPreferences(){
     lay->addWidget(deleteOrderButton);
 
 }
+
+
+
 void OrderActionWindow::showWindow(int order){
     this->setWindowTitle(QString::number(order));
     actualOrder = order;
@@ -77,15 +84,20 @@ void OrderActionWindow::setFonts(){
     buttonsFont.setPointSize(15);
 }
 
+
+
 void OrderActionWindow::fullReady_clicked(){
     emit setFullReadyOrder(actualOrder);
 }
+
 void OrderActionWindow::partReady_clicked(){
     emit setPartReadyOrder(actualOrder);
 }
+
 void OrderActionWindow::notReady_clicked(){
     emit setNotReadyOrder(actualOrder);
 }
+
 void OrderActionWindow::deleteOrder_clicked(){
     emit deleteOrder(actualOrder);
 }

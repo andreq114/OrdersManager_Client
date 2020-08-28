@@ -6,22 +6,28 @@ dbmanager::dbmanager(QObject *parent)
     startDatabase();
 }
 
+dbmanager::~dbmanager()
+{
+    delete query;
+}
 void dbmanager::startDatabase(){
     const QString DRIVER("QSQLITE");
-    if(QSqlDatabase::isDriverAvailable(DRIVER))
+    if(QSqlDatabase::isDriverAvailable(DRIVER))                                                                 //Sprawdzamy czy sterownik jest dostępny
         qDebug()<<"Jest driver";
 
-    db = QSqlDatabase::addDatabase(DRIVER,"database");
+    db = QSqlDatabase::addDatabase(DRIVER,"database");                                                          //Tworzymy połączenie z bazą danych
 
-    const QString applicationFolder = QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation);
-    db.setDatabaseName(applicationFolder+"/databaseclient.sqllite");
+    const QString applicationFolder = QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation);   //Pobieramy lokalizacje aplikacji
+    db.setDatabaseName(applicationFolder+"/databaseclient.sqllite");                                            //Tworzymy baze danych w danej lokalizacji z podaną nazwą,
+                                                                                                                //jeśli istnieje to łączymy się
 
 
     if(!db.open())
         qWarning() << "ERROR: " << db.lastError();
-    query = new QSqlQuery(db);
+    query = new QSqlQuery(db);                                                                                  //Tworzymy nowe query dla nasze bazy
 
 
+    //Tworzymy tabele jesli nie istnieją
     query->exec("CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY, orderNumber INTEGER, orderState INTEGER,orderTime VARCHAR(10))");
 
     query->exec("CREATE TABLE IF NOT EXISTS config (id INTEGER PRIMARY KEY, ipAdress VARCHAR(20), port INTEGER)");
@@ -33,6 +39,8 @@ void dbmanager::startDatabase(){
 
 
 }
+
+
 
 bool dbmanager::addIp_port_toDb(QString ip,int port){
 
@@ -77,6 +85,7 @@ bool dbmanager::addIp_port_toDb(QString ip,int port){
 
 
 QString dbmanager::readIp_fromDb(){
+    //Odczytujemy ip z bazy
     query->clear();
     if(!query -> exec("SELECT ipAdress FROM config WHERE id = 1"))
         qWarning() << "ERROR: " << query->lastError().text();
@@ -88,6 +97,7 @@ QString dbmanager::readIp_fromDb(){
 };
 
 int dbmanager::readPort_fromDb(){
+    //Odczytujemy port z bazy
     query->clear();
     if(!query -> exec("SELECT port FROM config WHERE id = 1"))
         qWarning() << "ERROR: " << query->lastError().text();

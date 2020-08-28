@@ -19,30 +19,35 @@ class OrderActionWindow : public QDialog
 public:
     OrderActionWindow(QWidget *parent = nullptr);
     ~OrderActionWindow();
-    void showWindow(int order);
-    void setWindowPreferences();
+    void showWindow(int order);                                             //Metoda do pokazania okienka
+    void setWindowPreferences();                                            //Metoda z konfiguracją okienka
 
 public slots:
-    void fullReady_clicked();
+    void fullReady_clicked();                                               //Metody przy kliknieciu kazdego z buttonów
     void partReady_clicked();
     void notReady_clicked();
     void deleteOrder_clicked();
 
 
 private:
-    QLabel *orderNumberLabel;
-    QPushButton *fullReadyButton;
+    QLabel *orderNumberLabel;                                               //Label z numerem zamowienia ktore edytujemy
+    QPushButton *fullReadyButton;                                           //Buttony edytujace dane zamowienia w okreslony sposob
     QPushButton *partReadyButton;
     QPushButton *notReadyButton;
     QPushButton *deleteOrderButton;
-    QFont titleFont;
-    QFont buttonsFont;
-    int actualOrder = 0;
+    QVBoxLayout *lay;                                                       //Layout dla powyzszych
 
-    void setFonts();
+
+    QFont titleFont;                                                        //Czcionki dla labela i buttonów
+    QFont buttonsFont;
+
+    void setFonts();                                                        //Metoda ustawiajaca czcionki dla powyższych
+
+
+    int actualOrder = 0;                                                    //Numer zamowienia ktore aktualnie edytujemy
 
 signals:
-    void setFullReadyOrder(int order);
+    void setFullReadyOrder(int order);                                      //Sygnały z numerem zamowienia do zmiany stanu wysylane do mainwindow
     void setPartReadyOrder(int order);
     void setNotReadyOrder(int order);
     void deleteOrder(int order);

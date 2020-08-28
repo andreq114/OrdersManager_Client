@@ -13,15 +13,15 @@ class dbmanager
 {
 public:
     dbmanager(QObject *parent);
-    void startDatabase();
+    ~dbmanager();
+    void startDatabase();                                           //Początkowa konfiguracja bazy danych
 
-    QString readIp_fromDb();
-    int readPort_fromDb();
-    bool addIp_port_toDb(QString ip,int port);
+    QString readIp_fromDb();                                        //Metoda do odczytania IP z bazy danych
+    int readPort_fromDb();                                          //Metoda do odczytania portu z bazy danych
+    bool addIp_port_toDb(QString ip,int port);                      //Metoda do dodania ip/portu do bazy danych
 
 
 private:
-    QString dbPath = "";
     QSqlQuery *query;
     QSqlDatabase db;
 };
