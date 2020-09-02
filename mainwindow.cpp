@@ -153,8 +153,8 @@ void MainWindow::on_actionKonfiguracja_triggered()
     }else{
         QDialog dialog(this);
 
-        dialog.setMaximumSize(200,190);
-        dialog.setMinimumSize(200,190);
+        dialog.setMaximumSize(200,170);
+        dialog.setMinimumSize(200,170);
 
         QFont font;
         font.setPointSize(30);
